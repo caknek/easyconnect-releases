@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EasyConnect · Cuenta</title>
+<link rel="icon" href="icon.png">
+<style>
+:root { --bg:#0b0f0d; --card:#121915; --line:#22302a; --text:#f2f7f4; --muted:#9fb3a9; --green:#00E89A; --on:#06140e; --bad:#ff6b6b; }
+@media (prefers-color-scheme: light) { :root { --bg:#eef3f0; --card:#ffffff; --line:#d7e2dc; --text:#0d1512; --muted:#5b6b63; } }
+* { box-sizing: border-box; }
+body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px 16px; background:var(--bg); color:var(--text); font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+.card { width:100%; max-width:420px; background:var(--card); border:1px solid var(--line); border-radius:22px; padding:28px; box-shadow:0 30px 80px rgba(0,0,0,.25); }
+.brand { font-weight:800; font-size:26px; letter-spacing:-.5px; margin-bottom:18px; } .brand span { color:var(--green); }
+h1 { font-size:21px; margin:0 0 6px; } p { margin:0 0 14px; color:var(--muted); }
+label { display:block; font-weight:600; font-size:14px; margin:14px 0 6px; }
+input { width:100%; padding:13px 14px; border-radius:12px; border:1px solid var(--line); background:transparent; color:var(--text); font-size:16px; }
+input:focus { outline:2px solid var(--green); border-color:transparent; }
+button, .btn { display:inline-flex; justify-content:center; width:100%; margin-top:18px; padding:13px 16px; border:0; border-radius:999px; background:var(--green); color:var(--on); font-weight:800; font-size:16px; cursor:pointer; text-decoration:none; }
+button:disabled { opacity:.6; cursor:default; }
+.msg { margin-top:14px; padding:12px 14px; border-radius:12px; font-size:14px; display:none; }
+.msg.err { display:block; background:rgba(255,107,107,.12); color:var(--bad); }
+.msg.ok { display:block; background:rgba(0,232,154,.12); color:var(--green); }
+.hint { font-size:13px; color:var(--muted); margin-top:6px; }
+.hide { display:none; }
+.foot { margin-top:18px; font-size:13px; color:var(--muted); text-align:center; }
+.foot a { color:var(--green); }
+</style>
+</head>
+<body>
+<main class="card">
+  <div class="brand">Easy<span>Connect</span></div>
+
+  <!-- Cambiar contraseña -->
+  <section id="v-reset" class="hide">
+    <h1>Crea tu nueva contraseña</h1>
+    <p id="who">Escribe una contraseña nueva para tu cuenta.</p>
+    <form id="f-reset">
+      <label for="p1">Nueva contraseña</label>
+      <input id="p1" type="password" autocomplete="new-password" minlength="8" required>
+      <div class="hint">Mínimo 8 caracteres.</div>
+      <label for="p2">Repite la contraseña</label>
+      <input id="p2" type="password" autocomplete="new-password" minlength="8" required>
+      <button id="b-reset" type="submit">Guardar contraseña</button>
+    </form>
+    <div id="m-reset" class="msg"></div>
+  </section>
+
+  <!-- Listo -->
+  <section id="v-done" class="hide">
+    <h1 id="done-t">¡Listo!</h1>
+    <p id="done-p">Ya puedes volver a EasyConnect e iniciar sesión.</p>
+  </section>
+
+  <!-- Enlace vencido o inválido -->
+  <section id="v-error" class="hide">
+    <h1>Este enlace ya no sirve</h1>
+    <p id="err-p">El enlace venció o ya se usó. En EasyConnect, presiona «¿Olvidaste tu contraseña?» y pide uno nuevo. Ábrelo apenas te llegue (dura 1 hora).</p>
+  </section>
+
+  <!-- Portada -->
+  <section id="v-home" class="hide">
+    <h1>EasyConnect para Windows</h1>
+    <p>Descarga el instalador. Si ya tienes EasyConnect, se actualiza solo con EasyUpdate.</p>
+    <a class="btn" href="https://github.com/caknek/easyconnect-releases/releases/latest/download/EasyConnect-Instalador.exe">Descargar EasyConnect</a>
+  </section>
+
+  <div class="foot">Conecta ideas con recursos · <a href="https://github.com/caknek/easyconnect-releases/releases/latest">Versiones</a></div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+(function () {
+  var URL_SB = "https://gogpplmslgihfsvnhbkj.supabase.co";
+  var KEY = "sb_publishable_04VvY6PaqRkaI0eMNvyXCQ_JrMZiz7b";   // clave pública (publishable): la seguridad la dan las reglas RLS
+  var sb = window.supabase.createClient(URL_SB, KEY, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
+  var $ = function (id) { return document.getElementById(id); };
+  var show = function (id) { ["v-reset", "v-done", "v-error", "v-home"].forEach(function (v) { $(v).classList.toggle("hide", v !== id); }); };
+  var q = new URLSearchParams((location.hash || "").replace(/^#/, "") + "&" + (location.search || "").replace(/^\?/, ""));
+  // Quita los datos del enlace de la barra de direcciones
+  if (location.hash || location.search) history.replaceState(null, "", location.pathname);
+
+  var type = q.get("type"), at = q.get("access_token"), rt = q.get("refresh_token");
+  if (q.get("error") || q.get("error_code")) {
+    var d = (q.get("error_description") || "").replace(/\+/g, " ");
+    if (/expired|invalid/i.test(d + q.get("error_code"))) $("err-p").textContent = "El enlace venció o ya se usó. En EasyConnect, presiona «¿Olvidaste tu contraseña?» y pide uno nuevo. Ábrelo apenas te llegue (dura 1 hora).";
+    show("v-error"); return;
+  }
+  if (at && rt && type === "recovery") {
+    sb.auth.setSession({ access_token: at, refresh_token: rt }).then(function (r) {
+      if (r.error || !r.data.session) { show("v-error"); return; }
+      var email = r.data.session.user && r.data.session.user.email;
+      if (email) $("who").textContent = "Cuenta: " + email;
+      show("v-reset");
+    });
+  } else if (at && (type === "signup" || type === "invite" || type === "magiclink" || type === "email_change")) {
+    $("done-t").textContent = type === "email_change" ? "¡Correo actualizado!" : "¡Correo confirmado!";
+    $("done-p").textContent = "Tu cuenta quedó lista. Vuelve a EasyConnect e inicia sesión con tu correo y contraseña.";
+    show("v-done");
+  } else {
+    show("v-home");
+  }
+
+  $("f-reset").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var m = $("m-reset"); m.className = "msg";
+    var p1 = $("p1").value, p2 = $("p2").value;
+    if (p1.length < 8) { m.className = "msg err"; m.textContent = "La contraseña debe tener al menos 8 caracteres."; return; }
+    if (p1 !== p2) { m.className = "msg err"; m.textContent = "Las contraseñas no coinciden."; return; }
+    $("b-reset").disabled = true; $("b-reset").textContent = "Guardando…";
+    sb.auth.updateUser({ password: p1 }).then(function (r) {
+      if (r.error) {
+        $("b-reset").disabled = false; $("b-reset").textContent = "Guardar contraseña";
+        m.className = "msg err";
+        m.textContent = /different from the old/i.test(r.error.message) ? "La nueva contraseña debe ser distinta de la anterior." : /weak|short/i.test(r.error.message) ? "Esa contraseña es muy débil. Usa al menos 8 caracteres con letras y números." : "No se pudo guardar: " + r.error.message;
+        return;
+      }
+      sb.auth.signOut().finally(function () {
+        $("done-t").textContent = "¡Contraseña cambiada!";
+        $("done-p").textContent = "Vuelve a EasyConnect e inicia sesión con tu correo y tu nueva contraseña.";
+        show("v-done");
+      });
+    });
+  });
+})();
+</script>
+</body>
+</html>
