@@ -1,10 +1,11 @@
 # Publica una versión de EasyConnect a partir de una rama upload/vX.Y.Z
 # La rama trae las partes del instalador (EasyConnect-Instalador.parte*.bin), el .blockmap y latest.yml.
-# El flujo une las partes, comprueba el sha512 de latest.yml, crea el Release y borra la rama.
+# La última subida agrega entrega/LISTO. El flujo une las partes, comprueba el sha512 de latest.yml, crea el Release y borra la rama.
 name: Publicar versión
 on:
   push:
     branches: ["upload/**"]
+    paths: ["entrega/LISTO"]   # se publica solo cuando llega la última parte
 permissions:
   contents: write
 jobs:
