@@ -1,0 +1,38 @@
+# Publica una versión de EasyConnect a partir de una rama upload/vX.Y.Z
+# La rama trae las partes del instalador (EasyConnect-Instalador.parte*.bin), el .blockmap y latest.yml.
+# El flujo une las partes, comprueba el sha512 de latest.yml, crea el Release y borra la rama.
+name: Publicar versión
+on:
+  push:
+    branches: ["upload/**"]
+permissions:
+  contents: write
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unir y comprobar el instalador
+        run: |
+          set -e
+          cd entrega
+          cat $(ls EasyConnect-Instalador.parte*.bin | sort) > EasyConnect-Instalador.exe
+          want=$(grep -m1 '^sha512:' latest.yml | awk '{print $2}')
+          got=$(openssl dgst -sha512 -binary EasyConnect-Instalador.exe | base64 -w0)
+          echo "esperado $want"; echo "obtenido $got"
+          test "$want" = "$got"
+          echo "VERSION=$(grep -m1 '^version:' latest.yml | awk '{print $2}')" >> "$GITHUB_ENV"
+      - name: Crear el Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          cd entrega
+          NOTAS="EasyConnect v${VERSION} para Windows. Descarga EasyConnect-Instalador.exe para instalar; si ya tienes EasyConnect, se actualiza solo."
+          [ -f NOTAS.md ] && NOTAS="$(cat NOTAS.md)"
+          gh release delete "v${VERSION}" --yes --cleanup-tag 2>/dev/null || true
+          gh release create "v${VERSION}" EasyConnect-Instalador.exe EasyConnect-Instalador.exe.blockmap latest.yml \
+            --title "EasyConnect v${VERSION}" --notes "$NOTAS" --target main --latest
+      - name: Borrar la rama de subida
+        if: always()
+        run: git push origin --delete "${GITHUB_REF_NAME}" || true
