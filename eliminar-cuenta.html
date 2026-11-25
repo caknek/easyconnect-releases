@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EasyConnect · Eliminar mi cuenta</title>
+<link rel="icon" href="icon.png">
+<style>
+:root { --bg:#0b0f0d; --card:#121915; --line:#22302a; --text:#f2f7f4; --muted:#9fb3a9; --green:#00E89A; --on:#06140e; --bad:#ff6b6b; }
+@media (prefers-color-scheme: light) { :root { --bg:#eef3f0; --card:#ffffff; --line:#d7e2dc; --text:#0d1512; --muted:#5b6b63; } }
+* { box-sizing: border-box; }
+body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px 16px; background:var(--bg); color:var(--text); font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+.card { width:100%; max-width:420px; background:var(--card); border:1px solid var(--line); border-radius:22px; padding:28px; box-shadow:0 30px 80px rgba(0,0,0,.25); }
+.brand { font-weight:800; font-size:26px; letter-spacing:-.5px; margin-bottom:18px; } .brand span { color:var(--green); }
+h1 { font-size:21px; margin:0 0 6px; } p { margin:0 0 14px; color:var(--muted); }
+label { display:block; font-weight:600; font-size:14px; margin:14px 0 6px; }
+input { width:100%; padding:13px 14px; border-radius:12px; border:1px solid var(--line); background:transparent; color:var(--text); font-size:16px; }
+input:focus { outline:2px solid var(--green); border-color:transparent; }
+button, .btn { display:inline-flex; justify-content:center; width:100%; margin-top:18px; padding:13px 16px; border:0; border-radius:999px; background:var(--green); color:var(--on); font-weight:800; font-size:16px; cursor:pointer; text-decoration:none; }
+button:disabled { opacity:.6; cursor:default; }
+.msg { margin-top:14px; padding:12px 14px; border-radius:12px; font-size:14px; display:none; }
+.msg.err { display:block; background:rgba(255,107,107,.12); color:var(--bad); }
+.msg.ok { display:block; background:rgba(0,232,154,.12); color:var(--green); }
+.hint { font-size:13px; color:var(--muted); margin-top:6px; }
+.hide { display:none; }
+.foot { margin-top:18px; font-size:13px; color:var(--muted); text-align:center; }
+.foot a { color:var(--green); }
+.doc { max-width:760px; } .doc h2 { font-size:22px; margin:22px 0 10px; } .doc p, .doc li { color:var(--text); opacity:.92; font-size:15px; } .doc ul { padding-left:20px; }
+.nav { display:flex; gap:14px; flex-wrap:wrap; margin-top:18px; font-size:14px; } .nav a { color:var(--green); }
+.opt { display:flex; gap:10px; align-items:flex-start; margin:10px 0; font-size:15px; } .opt input { width:auto; margin-top:4px; }
+textarea { width:100%; min-height:90px; padding:12px 14px; border-radius:12px; border:1px solid var(--line); background:transparent; color:var(--text); font:15px system-ui,sans-serif; }
+</style>
+</head>
+<body>
+<main class="card">
+  <div class="brand">Easy<span>Connect</span></div>
+  <section id="v-login">
+    <h1>Eliminar tu cuenta de EasyConnect</h1>
+    <p>Entra con el correo y la contraseña de tu cuenta para pedir que la eliminemos junto con tus datos. También puedes hacerlo en la app: Cuenta → Privacidad y datos → Cerrar mi cuenta.</p>
+    <form id="f-login">
+      <label for="em">Correo</label>
+      <input id="em" type="email" autocomplete="email" required>
+      <label for="pw">Contraseña</label>
+      <input id="pw" type="password" autocomplete="current-password" required>
+      <button id="b-login" type="submit">Continuar</button>
+    </form>
+    <div id="m-login" class="msg"></div>
+    <p class="hint" style="margin-top:14px">¿No recuerdas tu contraseña? En la app presiona «¿Olvidaste tu contraseña?», o escríbenos a realnotex2@gmail.com desde el correo de tu cuenta con el asunto «Eliminar mi cuenta».</p>
+  </section>
+  <section id="v-ask" class="hide">
+    <h1>¿Qué quieres eliminar?</h1>
+    <p id="who"></p>
+    <label class="opt"><input type="radio" name="k" value="cerrar cuenta" checked><span><b>Mi cuenta y todos mis datos.</b> Borramos tu perfil, publicaciones, mensajes, fotos y documentos de verificación.</span></label>
+    <label class="opt"><input type="radio" name="k" value="eliminar datos"><span><b>Solo algunos datos.</b> Cuéntanos cuáles abajo y mantenemos tu cuenta.</span></label>
+    <label for="det">Detalle (opcional)</label>
+    <textarea id="det" maxlength="600" placeholder="Por ejemplo: qué datos quieres borrar o por qué te vas"></textarea>
+    <button id="b-send" type="button">Enviar solicitud</button>
+    <div id="m-send" class="msg"></div>
+    <p class="hint" style="margin-top:14px">Qué se conserva: los Acuerdos firmados y los registros de pago se guardan por el plazo que exige la ley, como respaldo de la otra parte. Si tienes Acuerdos vigentes, primero hay que cumplirlos (puedes pausar tu cuenta mientras tanto). Respondemos por correo en un máximo de 30 días.</p>
+  </section>
+  <section id="v-done" class="hide">
+    <h1>Solicitud recibida</h1>
+    <p>Te escribiremos al correo de tu cuenta cuando esté lista. Si cambias de opinión, avísanos respondiendo ese correo.</p>
+  </section>
+  <div class="nav"><a href="./">Inicio</a><a href="privacidad.html">Política de privacidad</a><a href="terminos.html">Términos</a><a href="eliminar-cuenta.html">Eliminar mi cuenta</a></div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+(function () {
+  var sb = window.supabase.createClient("https://gogpplmslgihfsvnhbkj.supabase.co", "sb_publishable_04VvY6PaqRkaI0eMNvyXCQ_JrMZiz7b", { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
+  var $ = function (id) { return document.getElementById(id); };
+  var show = function (id) { ["v-login", "v-ask", "v-done"].forEach(function (v) { $(v).classList.toggle("hide", v !== id); }); };
+  $("f-login").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var m = $("m-login"); m.className = "msg";
+    $("b-login").disabled = true; $("b-login").textContent = "Entrando…";
+    sb.auth.signInWithPassword({ email: $("em").value.trim(), password: $("pw").value }).then(function (r) {
+      $("b-login").disabled = false; $("b-login").textContent = "Continuar";
+      if (r.error || !r.data.session) { m.className = "msg err"; m.textContent = /Invalid login/i.test((r.error || {}).message || "") ? "Correo o contraseña incorrectos." : /not confirmed/i.test((r.error || {}).message || "") ? "Primero confirma tu correo con el enlace que te enviamos." : "No pudimos entrar. Inténtalo de nuevo."; return; }
+      $("who").textContent = "Cuenta: " + r.data.session.user.email;
+      show("v-ask");
+    });
+  });
+  $("b-send").addEventListener("click", function () {
+    var m = $("m-send"); m.className = "msg";
+    var kind = document.querySelector('input[name="k"]:checked').value;
+    $("b-send").disabled = true; $("b-send").textContent = "Enviando…";
+    sb.rpc("request_account", { p_kind: kind, p_detail: ($("det").value || "").trim() || "Pedido desde la página web" }).then(function (r) {
+      $("b-send").disabled = false; $("b-send").textContent = "Enviar solicitud";
+      if (r.error) { m.className = "msg err"; m.textContent = r.error.message; return; }
+      sb.auth.signOut().finally(function () { show("v-done"); });
+    });
+  });
+})();
+</script>
+</body>
+</html>
